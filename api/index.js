@@ -1,21 +1,21 @@
 // api/index.js
 const axios = require('axios');
 
-// Fungsi asli Anda (diadaptasi sedikit untuk konteks serverless)
-async function img2prompt(imageBuffer, { language = 'en', model = 'general' } = {}) {
+// --- Kode Asli Anda (dengan sedikit modifikasi agar reusable) ---
+async function img2prompt(image, { language = 'en', model = 'general' } = {}) {
     try {
         const conf = {
             language: ['en', 'es', 'zh', 'zh-TW', 'fr', 'de', 'ja', 'ru', 'pt', 'ar', 'ko', 'it', 'nl', 'tr', 'pl', 'vi', 'th', 'hi', 'id'],
             model: ['general', 'midjourney', 'dalle', 'stable_diffusion', 'flux']
         };
-
-        if (!Buffer.isBuffer(imageBuffer)) throw new Error('Image must be a buffer.');
+        
+        if (!Buffer.isBuffer(image)) throw new Error('Image must be a buffer.');
         if (!conf.language.includes(language)) throw new Error(`Available languages: ${conf.language.join(', ')}.`);
         if (!conf.model.includes(model)) throw new Error(`Available models: ${conf.model.join(', ')}.`);
-
-        // Logika request ke API eksternal
+        
         const { data } = await axios.post('https://api.imagepromptguru.net/image-to-prompt', {
-            image: 'data:image/jpeg;base64,' + imageBuffer.toString('base64'),
+            // Kita memastikan format base64 header-nya benar
+            image: 'data:image/jpeg;base64,' + image.toString('base64'),
             language: language,
             model: model
         }, {
@@ -25,18 +25,16 @@ async function img2prompt(imageBuffer, { language = 'en', model = 'general' } = 
                 'user-agent': 'Mozilla/5.0 (Linux; Android 15; SM-F958 Build/AP3A.240905.015) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.6723.86 Mobile Safari/537.36'
             }
         });
-
+        
         return data.prompt;
     } catch (error) {
-        // Handle error response dari axios jika ada
-        const msg = error.response?.data?.message || error.message;
-        throw new Error(msg);
+        throw new Error(error.message || 'Internal Server Error');
     }
 }
 
-// Handler utama Vercel
+// --- Handler untuk Vercel ---
 module.exports = async (req, res) => {
-    // Enable CORS untuk frontend
+    // Tambahkan CORS agar frontend bisa mengakses
     res.setHeader('Access-Control-Allow-Credentials', true);
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
@@ -55,16 +53,20 @@ module.exports = async (req, res) => {
         const { imageBase64, language, model } = req.body;
 
         if (!imageBase64) {
-            return res.status(400).json({ error: 'Image is required' });
+            return res.status(400).json({ error: 'Image data is required' });
         }
 
-        // Convert base64 string dari frontend kembali ke Buffer agar sesuai dengan fungsi img2prompt Anda
+        // Frontend mengirim base64 string lengkap (ex: "data:image/jpeg;base64,...")
+        // Kita perlu menghapus prefix header untuk mendapatkan raw buffer
         const base64Data = imageBase64.replace(/^data:image\/\w+;base64,/, "");
         const imageBuffer = Buffer.from(base64Data, 'base64');
 
-        const prompt = await img2prompt(imageBuffer, { language, model });
-        
-        res.status(200).json({ prompt });
+        const result = await img2prompt(imageBuffer, { 
+            language: language || 'en', 
+            model: model || 'general' 
+        });
+
+        res.status(200).json({ prompt: result });
 
     } catch (error) {
         console.error(error);
