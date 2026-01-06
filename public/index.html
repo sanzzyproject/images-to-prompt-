@@ -5,63 +5,64 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Image to Prompt</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
 </head>
 <body>
 
-    <div class="container">
+    <div class="main-container">
         <header>
             <h1>Image to Prompt</h1>
-            <p>Ubah gambar menjadi deskripsi teks menggunakan AI</p>
+            <p>Konversi gambar menjadi teks prompt AI dalam hitungan detik.</p>
         </header>
 
-        <main>
-            <div class="upload-area" id="drop-zone">
-                <input type="file" id="fileInput" accept="image/*" hidden>
-                <div class="upload-content">
-                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                        <polyline points="17 8 12 3 7 8"></polyline>
-                        <line x1="12" y1="3" x2="12" y2="15"></line>
-                    </svg>
-                    <p>Klik atau seret gambar ke sini</p>
-                </div>
-                <img id="preview" alt="Preview" class="hidden">
+        <div class="upload-section">
+            <div class="file-drop-area" id="dropArea">
+                <span class="file-msg">Klik atau Drag foto di sini</span>
+                <input class="file-input" type="file" id="imageInput" accept="image/*">
+                <img id="previewImage" src="" alt="Preview" style="display: none;">
             </div>
+        </div>
 
-            <div class="controls">
-                <div class="select-group">
-                    <label>Bahasa</label>
-                    <select id="language">
-                        <option value="en">English</option>
-                        <option value="id" selected>Indonesia</option>
-                        <option value="ja">Japanese</option>
-                        <option value="zh">Chinese</option>
-                    </select>
-                </div>
-                <div class="select-group">
-                    <label>Model</label>
-                    <select id="model">
-                        <option value="general">General</option>
-                        <option value="midjourney">Midjourney</option>
-                        <option value="stable_diffusion">Stable Diffusion</option>
-                        <option value="flux">Flux</option>
-                    </select>
-                </div>
+        <div class="controls">
+            <div class="form-group">
+                <label for="language">Bahasa</label>
+                <select id="language">
+                    <option value="en">English (Default)</option>
+                    <option value="id">Indonesia</option>
+                    <option value="ja">Japanese</option>
+                    <option value="zh">Chinese</option>
+                    <option value="es">Spanish</option>
+                    <option value="fr">French</option>
+                    <option value="de">German</option>
+                </select>
             </div>
+            
+            <div class="form-group">
+                <label for="model">Model AI</label>
+                <select id="model">
+                    <option value="general">General</option>
+                    <option value="midjourney">Midjourney</option>
+                    <option value="dalle">DALL-E</option>
+                    <option value="stable_diffusion">Stable Diffusion</option>
+                    <option value="flux">Flux</option>
+                </select>
+            </div>
+        </div>
 
-            <button id="generateBtn" disabled>Generate Prompt</button>
+        <button id="generateBtn" disabled>Generate Prompt</button>
 
-            <div id="resultArea" class="hidden">
+        <div class="result-section" id="resultSection" style="display: none;">
+            <div class="loading" id="loading" style="display: none;">
+                <div class="spinner"></div>
+                <p>Menganalisis gambar...</p>
+            </div>
+            
+            <div class="output" id="outputContainer" style="display: none;">
                 <label>Hasil Prompt:</label>
-                <textarea id="promptOutput" readonly></textarea>
-                <button id="copyBtn" class="secondary-btn">Salin Teks</button>
+                <textarea id="promptResult" readonly></textarea>
+                <button class="copy-btn" id="copyBtn">Salin Teks</button>
             </div>
-        </main>
-        
-        <footer>
-            <p>Powered by ImagePromptGuru API</p>
-        </footer>
+        </div>
     </div>
 
     <script src="script.js"></script>
