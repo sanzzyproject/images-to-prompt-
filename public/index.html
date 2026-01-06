@@ -3,67 +3,150 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Image to Prompt</title>
+    <title>SANN404 - AI Vision</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
 </head>
 <body>
 
-    <div class="main-container">
-        <header>
-            <h1>Image to Prompt</h1>
-            <p>Konversi gambar menjadi teks prompt AI dalam hitungan detik.</p>
-        </header>
+    <nav class="navbar">
+        <div class="nav-content">
+            <div class="logo">SANN404<span class="dot">.</span>AI</div>
+            
+            <ul class="nav-links">
+                <li><a href="#home">Home</a></li>
+                <li><a href="#tool">Generator</a></li>
+                <li><a href="#about">Tentang</a></li>
+            </ul>
 
-        <div class="upload-section">
-            <div class="file-drop-area" id="dropArea">
-                <span class="file-msg">Klik atau Drag foto di sini</span>
-                <input class="file-input" type="file" id="imageInput" accept="image/*">
-                <img id="previewImage" src="" alt="Preview" style="display: none;">
+            <div class="menu-toggle" id="menuToggle">
+                <i class="ri-more-2-fill"></i>
             </div>
         </div>
+    </nav>
 
-        <div class="controls">
-            <div class="form-group">
-                <label for="language">Bahasa</label>
-                <select id="language">
-                    <option value="en">English (Default)</option>
-                    <option value="id">Indonesia</option>
-                    <option value="ja">Japanese</option>
-                    <option value="zh">Chinese</option>
-                    <option value="es">Spanish</option>
-                    <option value="fr">French</option>
-                    <option value="de">German</option>
-                </select>
-            </div>
-            
-            <div class="form-group">
-                <label for="model">Model AI</label>
-                <select id="model">
-                    <option value="general">General</option>
-                    <option value="midjourney">Midjourney</option>
-                    <option value="dalle">DALL-E</option>
-                    <option value="stable_diffusion">Stable Diffusion</option>
-                    <option value="flux">Flux</option>
-                </select>
-            </div>
-        </div>
-
-        <button id="generateBtn" disabled>Generate Prompt</button>
-
-        <div class="result-section" id="resultSection" style="display: none;">
-            <div class="loading" id="loading" style="display: none;">
-                <div class="spinner"></div>
-                <p>Menganalisis gambar...</p>
-            </div>
-            
-            <div class="output" id="outputContainer" style="display: none;">
-                <label>Hasil Prompt:</label>
-                <textarea id="promptResult" readonly></textarea>
-                <button class="copy-btn" id="copyBtn">Salin Teks</button>
-            </div>
+    <div class="sidebar-menu" id="sidebarMenu">
+        <a href="#home" class="side-link"><i class="ri-home-5-line"></i> Beranda</a>
+        <a href="#tool" class="side-link"><i class="ri-magic-line"></i> Mulai Generate</a>
+        <a href="#about" class="side-link"><i class="ri-information-line"></i> Cara Kerja</a>
+        <div class="sidebar-footer">
+            <p>Version 2.0.0 (2026)</p>
         </div>
     </div>
+
+    <header id="home" class="hero-section">
+        <div class="hero-overlay"></div>
+        <img src="https://images.unsplash.com/photo-1620712943543-bcc4688e7485?q=80&w=1965&auto=format&fit=crop" alt="AI Background" class="hero-bg">
+        
+        <div class="hero-content">
+            <span class="badge">Next Gen AI Technology</span>
+            <h1>Ubah Gambar Menjadi <br><span class="highlight">Teks Prompt</span> Seketika.</h1>
+            <p>Platform cerdas untuk menganalisis visual dan menghasilkan deskripsi prompt presisi untuk Stable Diffusion, Midjourney, atau Flux.</p>
+            <a href="#tool" class="cta-button">Coba Sekarang <i class="ri-arrow-right-line"></i></a>
+        </div>
+    </header>
+
+    <section id="tool" class="tool-section">
+        <div class="container">
+            <div class="app-card">
+                <div class="card-header">
+                    <h2>AI Image Analyzer</h2>
+                    <p>Upload foto Anda di bawah ini</p>
+                </div>
+
+                <div class="upload-wrapper">
+                    <div class="file-drop-area" id="dropArea">
+                        <div class="icon-box">
+                            <i class="ri-upload-cloud-2-line"></i>
+                        </div>
+                        <span class="file-msg">Seret foto atau klik untuk upload</span>
+                        <input class="file-input" type="file" id="imageInput" accept="image/*">
+                        <img id="previewImage" src="" alt="Preview">
+                    </div>
+                </div>
+
+                <div class="controls-grid">
+                    <div class="input-group">
+                        <label><i class="ri-translate-2"></i> Bahasa</label>
+                        <div class="select-wrapper">
+                            <select id="language">
+                                <option value="en">English (Recommended)</option>
+                                <option value="id">Indonesia</option>
+                                <option value="ja">Japanese</option>
+                                <option value="zh">Chinese</option>
+                            </select>
+                            <i class="ri-arrow-down-s-line arrow-icon"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label><i class="ri-brain-line"></i> Model AI</label>
+                        <div class="select-wrapper">
+                            <select id="model">
+                                <option value="general">General</option>
+                                <option value="midjourney">Midjourney v6</option>
+                                <option value="dalle">DALL-E 3</option>
+                                <option value="flux">Flux.1</option>
+                            </select>
+                            <i class="ri-arrow-down-s-line arrow-icon"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <button id="generateBtn" disabled>
+                    <span class="btn-text">Generate Prompt</span>
+                    <span class="btn-icon"><i class="ri-sparkling-fill"></i></span>
+                </button>
+
+                <div class="result-area" id="resultSection">
+                    <div class="loading-state" id="loading">
+                        <div class="loader"></div>
+                        <p>Sedang menganalisis piksel...</p>
+                    </div>
+                    
+                    <div class="output-box" id="outputContainer">
+                        <div class="output-header">
+                            <span>Hasil Prompt</span>
+                            <button class="copy-btn" id="copyBtn"><i class="ri-file-copy-line"></i> Salin</button>
+                        </div>
+                        <textarea id="promptResult" readonly></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="about" class="info-section">
+        <div class="info-container">
+            <h3>Mengapa menggunakan alat ini?</h3>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <i class="ri-speed-up-line"></i>
+                    <h4>Super Cepat</h4>
+                    <p>Analisis gambar dalam hitungan detik menggunakan serverless architecture.</p>
+                </div>
+                <div class="feature-card">
+                    <i class="ri-robot-2-line"></i>
+                    <h4>Multi Model</h4>
+                    <p>Mendukung format prompt untuk berbagai AI Art Generator populer.</p>
+                </div>
+                <div class="feature-card">
+                    <i class="ri-lock-2-line"></i>
+                    <h4>Aman</h4>
+                    <p>Foto diproses sementara dan tidak disimpan secara permanen di server kami.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="footer-content">
+            <div class="brand">SANN404 FORUM</div>
+            <p>Developed with ❤️ for the AI Community.</p>
+            <p class="copyright">&copy; 2026 SANN404. All rights reserved.</p>
+        </div>
+    </footer>
 
     <script src="script.js"></script>
 </body>
