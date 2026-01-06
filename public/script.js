@@ -1,117 +1,150 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // === Elements Selection ===
+    // === Elements ===
     const fileInput = document.getElementById('imageInput');
-    const previewImage = document.getElementById('previewImage');
     const dropArea = document.getElementById('dropArea');
-    const iconBox = document.querySelector('.icon-box');
-    const fileMsg = document.querySelector('.file-msg');
+    const previewImage = document.getElementById('previewImage');
+    const uploadContent = document.querySelector('.upload-content');
+    const removeImgBtn = document.getElementById('removeImgBtn');
     const generateBtn = document.getElementById('generateBtn');
     
-    const languageSelect = document.getElementById('language');
-    const modelSelect = document.getElementById('model');
-    
-    const resultSection = document.getElementById('resultSection');
+    // Result Elements
+    const emptyState = document.getElementById('emptyState');
     const loading = document.getElementById('loading');
-    const outputContainer = document.getElementById('outputContainer');
+    const resultContent = document.getElementById('resultContent');
     const promptResult = document.getElementById('promptResult');
     const copyBtn = document.getElementById('copyBtn');
+    const modelTag = document.getElementById('modelTag');
+    const charCount = document.getElementById('charCount');
 
-    // Sidebar/Menu Elements
+    // Sidebar
     const menuToggle = document.getElementById('menuToggle');
     const sidebarMenu = document.getElementById('sidebarMenu');
-    let isMenuOpen = false;
+    const closeSidebar = document.getElementById('closeSidebar');
 
-    // === UI Interactions ===
+    let currentFile = null;
 
-    // 1. Sidebar Toggle (Titik 3)
+    // === Sidebar Logic ===
+    function toggleSidebar() {
+        sidebarMenu.classList.toggle('active');
+    }
     menuToggle.addEventListener('click', (e) => {
         e.stopPropagation();
-        isMenuOpen = !isMenuOpen;
-        if(isMenuOpen) {
-            sidebarMenu.classList.add('active');
-        } else {
-            sidebarMenu.classList.remove('active');
-        }
+        toggleSidebar();
     });
-
-    // Close menu when clicking outside
+    closeSidebar.addEventListener('click', toggleSidebar);
     document.addEventListener('click', (e) => {
-        if (isMenuOpen && !sidebarMenu.contains(e.target) && !menuToggle.contains(e.target)) {
+        if (!sidebarMenu.contains(e.target) && !menuToggle.contains(e.target)) {
             sidebarMenu.classList.remove('active');
-            isMenuOpen = false;
         }
     });
 
-    // 2. File Handling
-    fileInput.addEventListener('change', handleFile);
+    // === Drag & Drop + Upload Logic ===
+    dropArea.addEventListener('click', () => fileInput.click());
 
-    function handleFile(e) {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                previewImage.src = e.target.result;
-                previewImage.style.display = 'block';
-                // Hide default upload UI
-                iconBox.style.display = 'none';
-                fileMsg.style.display = 'none';
-                // Enable Button
-                generateBtn.disabled = false;
-                // Add active border style
-                dropArea.style.borderColor = 'var(--primary)';
-            }
-            reader.readAsDataURL(file);
+    dropArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropArea.style.borderColor = 'var(--primary)';
+        dropArea.style.background = 'var(--primary-soft)';
+    });
+
+    dropArea.addEventListener('dragleave', () => {
+        dropArea.style.borderColor = '';
+        dropArea.style.background = '';
+    });
+
+    dropArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropArea.style.borderColor = '';
+        dropArea.style.background = '';
+        const file = e.dataTransfer.files[0];
+        handleFileSelect(file);
+    });
+
+    fileInput.addEventListener('change', (e) => {
+        handleFileSelect(e.target.files[0]);
+    });
+
+    function handleFileSelect(file) {
+        if (!file) return;
+        if (!file.type.startsWith('image/')) {
+            alert('Harap upload file gambar.');
+            return;
         }
+
+        currentFile = file;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            previewImage.src = e.target.result;
+            previewImage.style.display = 'block';
+            uploadContent.style.display = 'none';
+            removeImgBtn.style.display = 'block';
+            generateBtn.disabled = false;
+        };
+        reader.readAsDataURL(file);
     }
 
-    // 3. Generate Logic
-    generateBtn.addEventListener('click', async () => {
-        const file = fileInput.files[0];
-        if (!file) return;
+    removeImgBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        resetUpload();
+    });
 
-        // UI Updates: Loading state
+    function resetUpload() {
+        currentFile = null;
+        fileInput.value = '';
+        previewImage.style.display = 'none';
+        uploadContent.style.display = 'block';
+        removeImgBtn.style.display = 'none';
         generateBtn.disabled = true;
-        generateBtn.innerHTML = '<div class="loader" style="width:20px;height:20px;border-width:2px;margin:0;"></div> Processing...';
-        
-        resultSection.style.display = 'block';
+    }
+
+    // === Generate API Logic ===
+    generateBtn.addEventListener('click', async () => {
+        if (!currentFile) return;
+
+        // UI Transition
+        generateBtn.disabled = true;
+        emptyState.style.display = 'none';
+        resultContent.style.display = 'none';
         loading.style.display = 'block';
-        outputContainer.style.display = 'none';
-        
-        // Scroll to result smoothly
-        resultSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+        const language = document.getElementById('language').value;
+        const model = document.getElementById('model').value;
 
         try {
-            const base64 = await toBase64(file);
+            const base64 = await toBase64(currentFile);
 
             const response = await fetch('/api/index', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     imageBase64: base64,
-                    language: languageSelect.value,
-                    model: modelSelect.value
+                    language: language,
+                    model: model
                 })
             });
 
             const data = await response.json();
 
-            if (!response.ok) throw new Error(data.error || 'Gagal memproses gambar');
+            if (!response.ok) throw new Error(data.error || 'Server Error');
 
-            // Success
+            // Success Display
             promptResult.value = data.prompt;
+            modelTag.textContent = model.toUpperCase();
+            charCount.textContent = data.prompt.length;
+            
             loading.style.display = 'none';
-            outputContainer.style.display = 'block';
+            resultContent.style.display = 'flex'; // Flex untuk layout vertical
 
         } catch (error) {
             alert('SANN404 Error: ' + error.message);
             loading.style.display = 'none';
+            emptyState.style.display = 'flex';
         } finally {
             generateBtn.disabled = false;
-            generateBtn.innerHTML = '<span class="btn-text">Generate Prompt</span><span class="btn-icon"><i class="ri-sparkling-fill"></i></span>';
         }
     });
 
-    // Helper: Base64
+    // Helper
     const toBase64 = file => new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.readAsDataURL(file);
@@ -119,21 +152,20 @@ document.addEventListener('DOMContentLoaded', () => {
         reader.onerror = error => reject(error);
     });
 
-    // 4. Copy Feature
+    // === Copy To Clipboard ===
     copyBtn.addEventListener('click', () => {
         promptResult.select();
-        document.execCommand('copy'); // Fallback support
         
-        // Modern approach
         if (navigator.clipboard) {
             navigator.clipboard.writeText(promptResult.value);
+        } else {
+            document.execCommand('copy');
         }
 
-        // Change Text temporarily
         const originalHTML = copyBtn.innerHTML;
-        copyBtn.innerHTML = '<i class="ri-check-line"></i> Tersalin!';
+        copyBtn.innerHTML = '<i class="ri-check-line"></i> Tersalin';
         copyBtn.style.background = '#dcfce7';
-        copyBtn.style.color = '#166534';
+        copyBtn.style.color = '#15803d';
         copyBtn.style.borderColor = '#dcfce7';
 
         setTimeout(() => {
