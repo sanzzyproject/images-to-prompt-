@@ -1,6 +1,9 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // === Elements Selection ===
     const fileInput = document.getElementById('imageInput');
     const previewImage = document.getElementById('previewImage');
+    const dropArea = document.getElementById('dropArea');
+    const iconBox = document.querySelector('.icon-box');
     const fileMsg = document.querySelector('.file-msg');
     const generateBtn = document.getElementById('generateBtn');
     
@@ -13,46 +16,76 @@ document.addEventListener('DOMContentLoaded', () => {
     const promptResult = document.getElementById('promptResult');
     const copyBtn = document.getElementById('copyBtn');
 
-    let currentFile = null;
+    // Sidebar/Menu Elements
+    const menuToggle = document.getElementById('menuToggle');
+    const sidebarMenu = document.getElementById('sidebarMenu');
+    let isMenuOpen = false;
 
-    // Handle File Selection
-    fileInput.addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if (file) {
-            currentFile = file;
-            const reader = new FileReader();
-            
-            reader.onload = function(e) {
-                previewImage.src = e.target.result;
-                previewImage.style.display = 'block';
-                fileMsg.style.display = 'none';
-                generateBtn.disabled = false;
-            }
-            
-            reader.readAsDataURL(file);
+    // === UI Interactions ===
+
+    // 1. Sidebar Toggle (Titik 3)
+    menuToggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        isMenuOpen = !isMenuOpen;
+        if(isMenuOpen) {
+            sidebarMenu.classList.add('active');
+        } else {
+            sidebarMenu.classList.remove('active');
         }
     });
 
-    // Handle Generate Button
-    generateBtn.addEventListener('click', async () => {
-        if (!currentFile) return;
+    // Close menu when clicking outside
+    document.addEventListener('click', (e) => {
+        if (isMenuOpen && !sidebarMenu.contains(e.target) && !menuToggle.contains(e.target)) {
+            sidebarMenu.classList.remove('active');
+            isMenuOpen = false;
+        }
+    });
 
-        // UI Updates
+    // 2. File Handling
+    fileInput.addEventListener('change', handleFile);
+
+    function handleFile(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                previewImage.src = e.target.result;
+                previewImage.style.display = 'block';
+                // Hide default upload UI
+                iconBox.style.display = 'none';
+                fileMsg.style.display = 'none';
+                // Enable Button
+                generateBtn.disabled = false;
+                // Add active border style
+                dropArea.style.borderColor = 'var(--primary)';
+            }
+            reader.readAsDataURL(file);
+        }
+    }
+
+    // 3. Generate Logic
+    generateBtn.addEventListener('click', async () => {
+        const file = fileInput.files[0];
+        if (!file) return;
+
+        // UI Updates: Loading state
         generateBtn.disabled = true;
+        generateBtn.innerHTML = '<div class="loader" style="width:20px;height:20px;border-width:2px;margin:0;"></div> Processing...';
+        
         resultSection.style.display = 'block';
         loading.style.display = 'block';
         outputContainer.style.display = 'none';
+        
+        // Scroll to result smoothly
+        resultSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
         try {
-            // Convert file to Base64
-            const base64 = await toBase64(currentFile);
+            const base64 = await toBase64(file);
 
-            // Call Backend API
             const response = await fetch('/api/index', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     imageBase64: base64,
                     language: languageSelect.value,
@@ -62,23 +95,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const data = await response.json();
 
-            if (!response.ok) {
-                throw new Error(data.error || 'Gagal memproses gambar');
-            }
+            if (!response.ok) throw new Error(data.error || 'Gagal memproses gambar');
 
-            // Show Result
+            // Success
             promptResult.value = data.prompt;
+            loading.style.display = 'none';
             outputContainer.style.display = 'block';
 
         } catch (error) {
-            alert('Error: ' + error.message);
-        } finally {
+            alert('SANN404 Error: ' + error.message);
             loading.style.display = 'none';
+        } finally {
             generateBtn.disabled = false;
+            generateBtn.innerHTML = '<span class="btn-text">Generate Prompt</span><span class="btn-icon"><i class="ri-sparkling-fill"></i></span>';
         }
     });
 
-    // Helper: File to Base64
+    // Helper: Base64
     const toBase64 = file => new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.readAsDataURL(file);
@@ -86,11 +119,28 @@ document.addEventListener('DOMContentLoaded', () => {
         reader.onerror = error => reject(error);
     });
 
-    // Copy to Clipboard
+    // 4. Copy Feature
     copyBtn.addEventListener('click', () => {
         promptResult.select();
-        document.execCommand('copy');
-        copyBtn.innerText = 'Tersalin!';
-        setTimeout(() => copyBtn.innerText = 'Salin Teks', 2000);
+        document.execCommand('copy'); // Fallback support
+        
+        // Modern approach
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(promptResult.value);
+        }
+
+        // Change Text temporarily
+        const originalHTML = copyBtn.innerHTML;
+        copyBtn.innerHTML = '<i class="ri-check-line"></i> Tersalin!';
+        copyBtn.style.background = '#dcfce7';
+        copyBtn.style.color = '#166534';
+        copyBtn.style.borderColor = '#dcfce7';
+
+        setTimeout(() => {
+            copyBtn.innerHTML = originalHTML;
+            copyBtn.style.background = '';
+            copyBtn.style.color = '';
+            copyBtn.style.borderColor = '';
+        }, 2000);
     });
 });
