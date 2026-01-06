@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Image to Prompt</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Image to Prompt</h1>
+            <p>Ubah gambar menjadi deskripsi teks menggunakan AI</p>
+        </header>
+
+        <main>
+            <div class="upload-area" id="drop-zone">
+                <input type="file" id="fileInput" accept="image/*" hidden>
+                <div class="upload-content">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="17 8 12 3 7 8"></polyline>
+                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
+                    <p>Klik atau seret gambar ke sini</p>
+                </div>
+                <img id="preview" alt="Preview" class="hidden">
+            </div>
+
+            <div class="controls">
+                <div class="select-group">
+                    <label>Bahasa</label>
+                    <select id="language">
+                        <option value="en">English</option>
+                        <option value="id" selected>Indonesia</option>
+                        <option value="ja">Japanese</option>
+                        <option value="zh">Chinese</option>
+                    </select>
+                </div>
+                <div class="select-group">
+                    <label>Model</label>
+                    <select id="model">
+                        <option value="general">General</option>
+                        <option value="midjourney">Midjourney</option>
+                        <option value="stable_diffusion">Stable Diffusion</option>
+                        <option value="flux">Flux</option>
+                    </select>
+                </div>
+            </div>
+
+            <button id="generateBtn" disabled>Generate Prompt</button>
+
+            <div id="resultArea" class="hidden">
+                <label>Hasil Prompt:</label>
+                <textarea id="promptOutput" readonly></textarea>
+                <button id="copyBtn" class="secondary-btn">Salin Teks</button>
+            </div>
+        </main>
+        
+        <footer>
+            <p>Powered by ImagePromptGuru API</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
